@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import os
 import numpy as np
 from tqdm import trange
@@ -8,6 +10,7 @@ from model import Model
 from buffer import Buffer
 import data.gaze_data as gaze_data
 import data.hand_data as hand_data
+import data.t18_data as t18_data
 from utils import imwrite, imread, img_tile
 
 class Trainer(object):
@@ -31,6 +34,7 @@ class Trainer(object):
     DataLoader = {
         'gaze': gaze_data.DataLoader,
         'hand': hand_data.DataLoader,
+        't18': t18_data.DataLoader,
     }[config.data_set]
     self.data_loader = DataLoader(config, rng=self.rng)
 
@@ -79,7 +83,7 @@ class Trainer(object):
     sample_num = reduce(lambda x, y: x*y, self.config.sample_image_grid)
     idxs = self.rng.choice(len(self.data_loader.synthetic_data_paths), sample_num)
     test_samples = np.expand_dims(np.stack(
-        [imread(path) for path in \
+        [imread(path, flatten=True) for path in \
             self.data_loader.synthetic_data_paths[idxs]]
     ), -1)
 
