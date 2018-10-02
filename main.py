@@ -11,19 +11,15 @@ from utils import prepare_dirs, save_config
 config = None
 
 def main(_):
+  tf.set_random_seed(config.random_seed)
   prepare_dirs(config)
 
-  rng = np.random.RandomState(config.random_seed)
-  tf.set_random_seed(config.random_seed)
-
-  trainer = Trainer(config, rng)
+  trainer = Trainer(config)
   save_config(config.model_dir, config)
 
   if config.is_train:
     trainer.train()
   else:
-    if not config.load_path:
-      raise Exception("[!] You should specify `load_path` to load a pretrained model")
     trainer.test()
 
 if __name__ == "__main__":

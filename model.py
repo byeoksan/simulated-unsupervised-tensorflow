@@ -10,13 +10,11 @@ class Model(object):
   def __init__(self, config, data_loader):
     self.data_loader = data_loader
 
-    self.task = config.task
     self.debug = config.debug
     self.config = config
 
     self.input_height = config.input_height
     self.input_width = config.input_width
-    self.input_channel = config.input_channel
 
     self.reg_scale = config.reg_scale
     self.learning_rate = config.learning_rate
@@ -33,7 +31,7 @@ class Model(object):
     show_all_variables()
 
   def _build_placeholders(self):
-    image_dims = [self.input_height, self.input_width, self.input_channel]
+    image_dims = [self.input_height, self.input_width, 1]
 
     min_after_dequeue = 5000
     capacity = min_after_dequeue + 3 * self.batch_size
@@ -60,9 +58,9 @@ class Model(object):
           self.test_x_filename, self.test_x
 
     self.y = tf.placeholder(
-        tf.uint8, [None, None, None, self.input_channel], name='real_inputs')
+        tf.uint8, [None, None, None, 1], name='real_inputs')
     self.R_x_history = tf.placeholder(
-        tf.float32, [None, None, None, self.input_channel], 'R_x_history')
+        tf.float32, [None, None, None, 1], 'R_x_history')
 
     resize_dim = [self.input_height, self.input_width]
     self.resized_x = tf.image.resize_images(self.x, resize_dim)
@@ -95,17 +93,14 @@ class Model(object):
       else:
         return optim.minimize(loss, global_step=step, var_list=var_list)
 
-    if self.task == "generative":
-      self.refiner_optim = minimize(
-          self.refiner_loss, self.refiner_step, self.refiner_vars)
+    self.refiner_optim = minimize(
+        self.refiner_loss, self.refiner_step, self.refiner_vars)
 
-      self.discrim_optim = minimize(
-          self.discrim_loss, self.discrim_step, self.discrim_vars)
+    self.discrim_optim = minimize(
+        self.discrim_loss, self.discrim_step, self.discrim_vars)
 
-      self.discrim_optim_with_history = minimize(
-          self.discrim_loss_with_history, self.discrim_step, self.discrim_vars)
-    elif self.task == "estimate":
-      raise Exception("[!] Not implemented yet")
+    self.discrim_optim_with_history = minimize(
+        self.discrim_loss_with_history, self.discrim_step, self.discrim_vars)
 
   def _build_model(self):
     with arg_scope([resnet_block, conv2d, max_pool2d, tanh],

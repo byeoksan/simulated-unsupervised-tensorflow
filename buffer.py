@@ -9,7 +9,7 @@ class Buffer(object):
     image_dims = [
         config.input_height,
         config.input_width,
-        config.input_channel,
+        1
     ]
 
     self.idx = 0

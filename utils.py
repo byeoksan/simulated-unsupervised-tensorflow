@@ -6,41 +6,19 @@ from datetime import datetime
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-try:
-  import scipy.misc
-  imread = scipy.misc.imread
-  imresize = scipy.misc.imresize
-  imwrite = scipy.misc.imsave
-except:
-  import cv2
-  imread = cv2.imread
-  imresize = cv2.resize
-  imwrite = cv2.imwrite
+import scipy.misc
+imread = scipy.misc.imread
+imresize = scipy.misc.imresize
+imwrite = scipy.misc.imsave
 
 import scipy.io as sio
 loadmat = sio.loadmat
 
 def prepare_dirs(config):
-  if config.load_path:
-    if config.load_path.startswith(config.task):
-      config.model_name = config.load_path
-    else:
-      config.model_name = "{}_{}".format(config.task, config.load_path)
-  else:
-    config.model_name = "{}_{}".format(config.task, get_time())
-
-  config.model_dir = os.path.join(config.log_dir, config.model_name)
-  config.sample_model_dir = os.path.join(config.sample_dir, config.model_name)
-  config.output_model_dir = os.path.join(config.output_dir, config.model_name)
-
-  for path in [config.log_dir, config.data_dir,
-               config.sample_dir, config.sample_model_dir,
-               config.output_dir, config.output_model_dir]:
+  for path in [config.model_dir, config.log_dir,
+               config.sample_dir, config.output_dir]:
     if not os.path.exists(path):
       os.makedirs(path)
-
-def get_time():
-  return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 def show_all_variables():
   model_vars = tf.trainable_variables()

@@ -14,12 +14,12 @@ import data.t18_data as t18_data
 from utils import imwrite, imread, img_tile
 
 class Trainer(object):
-  def __init__(self, config, rng):
+  def __init__(self, config):
     self.config = config
-    self.rng = rng
+    self.rng = np.random.RandomState(config.random_seed)
 
-    self.task = config.task
     self.model_dir = config.model_dir
+    self.log_dir = config.log_dir
     self.gpu_memory_fraction = config.gpu_memory_fraction
 
     self.log_step = config.log_step
@@ -57,9 +57,9 @@ class Trainer(object):
     }
 
     self.saver = tf.train.Saver()
-    self.summary_writer = tf.summary.FileWriter(self.model_dir)
+    self.summary_writer = tf.summary.FileWriter(self.log_dir)
 
-    sv = tf.train.Supervisor(logdir=self.model_dir,
+    sv = tf.train.Supervisor(logdir=self.log_dir,
                              is_chief=True,
                              saver=self.saver,
                              summary_op=None,
@@ -145,7 +145,7 @@ class Trainer(object):
 
       for image, filename in zip(res['output'], res['filename']):
         basename = os.path.basename(filename).replace("_cropped", "_refined")
-        path = os.path.join(self.config.output_model_dir, basename)
+        path = os.path.join(self.config.output_dir, basename)
         imwrite(path, image[:,:,0])
 
   def _inject_summary(self, tag, feed_dict, step):
@@ -153,7 +153,7 @@ class Trainer(object):
     self.summary_writer.add_summary(summaries['summary'], step)
 
     path = os.path.join(
-        self.config.sample_model_dir, "{}.png".format(step))
+        self.config.sample_dir, "{}.png".format(step))
     imwrite(path, img_tile(summaries['output'],
             tile_shape=self.config.sample_image_grid)[:,:,0])
 
